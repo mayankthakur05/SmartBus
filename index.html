@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartBus — Intercity Bus Search & Recommendation System</title>
+  <meta name="description" content="Find the best intercity buses across Punjab with transparent, rule-based recommendations, departure time filtering, fastest journey matching, and verified fares.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar" id="top">
+    <div class="nav-container">
+      <a href="#top" class="brand-logo" aria-label="SmartBus Home">
+        <span class="brand-icon"><i data-lucide="bus-front"></i></span>
+        <span class="brand-text">Smart<strong>Bus</strong></span>
+        <span class="brand-badge">Academic Project</span>
+      </a>
+
+      <nav class="nav-links" id="nav-links" aria-label="Main Navigation">
+        <a href="#hero" class="nav-link active">Home</a>
+        <a href="#search-section" class="nav-link">Find Buses</a>
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+        <a href="#recommendations" class="nav-link">Recommendation Logic</a>
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#about" class="nav-link">About</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="#search-section" class="btn btn-primary btn-sm">
+          <i data-lucide="search"></i>
+          <span>Find a Bus</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section with Search Panel -->
+    <section class="hero-section" id="hero">
+      <div class="hero-container">
+        <div class="hero-content">
+          <div class="pill-badge">
+            <i data-lucide="sparkles"></i>
+            <span>Departure Window Filter • Fastest Journey Highlighting • Punjab Transit Hubs</span>
+          </div>
+          <h1 class="hero-title">Your Journey, <span class="text-accent">Smarter.</span></h1>
+          <p class="hero-subtitle">
+            Find the most suitable intercity bus between any two stops along its route. 
+            SmartBus checks actual stop sequences, filters valid 1-hour departure windows from your boarding stop, 
+            and transparently highlights the <strong>Fastest Journey</strong> with verified fares.
+          </p>
+
+          <div class="hero-stats">
+            <div class="stat-item">
+              <span class="stat-number">9</span>
+              <span class="stat-label">Transit Hubs</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-number">95</span>
+              <span class="stat-label">Scheduled Trips</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-number">1-Hour</span>
+              <span class="stat-label">Departure Window</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-number">100%</span>
+              <span class="stat-label">Rule-Based</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Embedded Search Panel Card -->
+        <div class="search-panel-wrapper" id="search-section">
+          <div class="search-panel-card">
+            <div class="panel-header">
+              <div class="panel-title-group">
+                <i data-lucide="map-pin" class="panel-icon"></i>
+                <div>
+                  <h2 class="panel-title">Search Intercity Buses</h2>
+                  <p class="panel-desc">Select stops, departure time window, and bus comfort to find the fastest connection</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form -->
+            <form id="bus-search-form" class="search-form" novalidate>
+              <div class="form-grid">
+                <!-- Source Stop -->
+                <div class="form-group">
+                  <label for="source-select" class="form-label">
+                    <i data-lucide="circle-dot" class="label-icon text-success"></i>
+                    <span>Origin / Boarding Stop</span>
+                  </label>
+                  <div class="select-wrapper">
+                    <select id="source-select" name="source" class="form-select" required aria-required="true">
+                      <option value="" disabled selected>Loading stops...</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="select-arrow"></i>
+                  </div>
+                </div>
+
+                <!-- Swap Button -->
+                <div class="swap-action">
+                  <button type="button" id="swap-stops-btn" class="btn-swap" title="Swap Origin and Destination" aria-label="Swap Origin and Destination">
+                    <i data-lucide="arrow-left-right"></i>
+                  </button>
+                </div>
+
+                <!-- Destination Stop -->
+                <div class="form-group">
+                  <label for="destination-select" class="form-label">
+                    <i data-lucide="map-pin" class="label-icon text-danger"></i>
+                    <span>Destination / Drop Stop</span>
+                  </label>
+                  <div class="select-wrapper">
+                    <select id="destination-select" name="destination" class="form-select" required aria-required="true">
+                      <option value="" disabled selected>Loading stops...</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="select-arrow"></i>
+                  </div>
+                </div>
+
+                <!-- Preferred Departure Time (New Field) -->
+                <div class="form-group">
+                  <label for="departure-time-input" class="form-label">
+                    <i data-lucide="clock" class="label-icon text-accent"></i>
+                    <span>Preferred Departure</span>
+                  </label>
+                  <div class="input-wrapper time-input-wrapper">
+                    <input 
+                      type="time" 
+                      id="departure-time-input" 
+                      name="departure_time" 
+                      class="form-input form-time-input" 
+                      placeholder="e.g. 03:00 PM"
+                      aria-label="Preferred Departure Time from Origin Stop"
+                    >
+                    <button type="button" id="clear-time-btn" class="btn-clear-time hidden" title="Clear departure time" aria-label="Clear departure time">
+                      <i data-lucide="x"></i>
+                    </button>
+                  </div>
+                  <span class="field-hint">Next 1-hour window at origin</span>
+                </div>
+
+                <!-- Bus Type Preference -->
+                <div class="form-group">
+                  <label for="bus-type-select" class="form-label">
+                    <i data-lucide="wind" class="label-icon text-info"></i>
+                    <span>Bus Comfort</span>
+                  </label>
+                  <div class="select-wrapper">
+                    <select id="bus-type-select" name="bus_type" class="form-select">
+                      <option value="Any" selected>Any Bus Type</option>
+                      <option value="AC">AC Only</option>
+                      <option value="Non-AC">Non-AC Only</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="select-arrow"></i>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-group submit-group">
+                  <label class="form-label desktop-only-spacer">&nbsp;</label>
+                  <button type="submit" id="search-btn" class="btn btn-primary btn-block">
+                    <i data-lucide="search"></i>
+                    <span>Search Buses</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Inline Validation Alerts -->
+              <div id="validation-alert" class="alert alert-warning hidden" role="alert">
+                <i data-lucide="alert-circle" class="alert-icon"></i>
+                <span id="validation-message"></span>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Search Results Section -->
+    <section class="results-section hidden" id="results-section" aria-live="polite">
+      <div class="container">
+        <!-- Time Window Active Alert Banner -->
+        <div id="time-window-banner" class="time-window-banner hidden">
+          <div class="banner-content">
+            <span class="banner-badge"><i data-lucide="clock-3"></i> 1-Hour Window Active</span>
+            <span class="banner-text">
+              Showing departures from <strong id="time-window-range">3:00 PM to 4:00 PM</strong> at <strong id="time-window-stop">LPU</strong>
+            </span>
+          </div>
+          <button type="button" id="clear-time-filter-btn" class="btn-banner-clear" title="Remove departure time filter">
+            <i data-lucide="rotate-ccw"></i>
+            <span>Show All Departures</span>
+          </button>
+        </div>
+
+        <!-- Results Header Bar -->
+        <div class="results-header-bar">
+          <div class="results-title-group">
+            <h2 class="results-heading">
+              Available Buses: <span id="results-source-label" class="highlight-stop">--</span> 
+              <i data-lucide="arrow-right" class="inline-arrow"></i> 
+              <span id="results-dest-label" class="highlight-stop">--</span>
+            </h2>
+            <p class="results-count-text">
+              Found <strong id="results-total-count">0</strong> scheduled buses matching your route & criteria
+            </p>
+          </div>
+
+          <!-- Controls: Sorting & Filtering -->
+          <div class="results-controls">
+            <!-- Filter Pills -->
+            <div class="filter-pills" role="radiogroup" aria-label="Filter by Bus Type">
+              <span class="filter-label">Filter:</span>
+              <button type="button" class="pill-btn active" data-filter="All">All</button>
+              <button type="button" class="pill-btn" data-filter="AC">AC</button>
+              <button type="button" class="pill-btn" data-filter="Non-AC">Non-AC</button>
+            </div>
+
+            <!-- Sort Dropdown -->
+            <div class="sort-group">
+              <label for="sort-select" class="sort-label">Sort By:</label>
+              <div class="select-wrapper select-wrapper-sm">
+                <select id="sort-select" class="form-select form-select-sm">
+                  <option value="recommended" selected>Recommended</option>
+                  <option value="fastest_journey">Fastest Journey</option>
+                  <option value="fewest_stops">Fewest Stops</option>
+                  <option value="lowest_fare">Lowest Fare</option>
+                </select>
+                <i data-lucide="chevron-down" class="select-arrow"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="results-loading" class="state-card loading-state hidden">
+          <div class="spinner"></div>
+          <p class="state-title">Querying MongoDB Route Database...</p>
+          <p class="state-subtitle">Checking stop sequences, 1-hour departure window, and fastest journey calculation</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="results-error" class="state-card error-state hidden">
+          <i data-lucide="alert-triangle" class="state-icon text-danger"></i>
+          <h3 class="state-title" id="error-title">Search Failed</h3>
+          <p class="state-subtitle" id="error-description">Unable to load bus results. Please verify your connection.</p>
+          <button type="button" id="retry-search-btn" class="btn btn-secondary btn-sm mt-3">
+            <i data-lucide="refresh-cw"></i>
+            <span>Try Again</span>
+          </button>
+        </div>
+
+        <!-- Empty State -->
+        <div id="results-empty" class="state-card empty-state hidden">
+          <i data-lucide="bus" class="state-icon text-muted"></i>
+          <h3 class="state-title">No Matching Buses Found</h3>
+          <p class="state-subtitle" id="empty-description">
+            No scheduled trips traverse between <strong id="empty-source"></strong> and <strong id="empty-dest"></strong> within your search criteria.
+          </p>
+          <div class="state-actions mt-3">
+            <button type="button" id="empty-clear-time-btn" class="btn btn-secondary btn-sm hidden">
+              <i data-lucide="clock"></i>
+              <span>Clear Time Filter & View All Departures</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Results Grid -->
+        <div id="results-grid" class="bus-cards-grid">
+          <!-- Dynamic Bus Cards Injected via script.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- How SmartBus Works Section -->
+    <section class="section bg-light" id="how-it-works">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">How It Works</span>
+          <h2 class="section-title">Smart Route Matching & Time Window Logic</h2>
+          <p class="section-subtitle">
+            SmartBus goes beyond naive start-to-end matching by evaluating the entire ordered sequence and intermediate schedules of every trip.
+          </p>
+        </div>
+
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-icon-wrap"><i data-lucide="map-pin"></i></div>
+            <h3 class="step-title">Select Any Two Stops</h3>
+            <p class="step-desc">
+              Choose any boarding and drop-off points along a corridor. Both can be intermediate stops (e.g. searching <strong>LPU to Goraya</strong> on a <strong>Ludhiana to Batala</strong> trip).
+            </p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-icon-wrap"><i data-lucide="clock"></i></div>
+            <h3 class="step-title">1-Hour Departure Window</h3>
+            <p class="step-desc">
+              When a preferred time (e.g. 3:00 PM) is set, SmartBus checks the bus's scheduled time at <strong>your selected boarding stop</strong>, including departures between 3:00 PM and 4:00 PM.
+            </p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-icon-wrap"><i data-lucide="zap"></i></div>
+            <h3 class="step-title">Fastest Journey Highlight</h3>
+            <p class="step-desc">
+              Eligible buses are evaluated for minimum journey duration (<code class="code-pill">arr_time - dep_time</code>). The fastest option is prominently highlighted with a special badge.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How SmartBus Recommends Buses Section (Viva Focus) -->
+    <section class="section" id="recommendations">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">Academic Architecture</span>
+          <h2 class="section-title">How SmartBus Recommends Buses</h2>
+          <p class="section-subtitle">
+            This project uses a transparent, deterministic <strong>rule-based ranking algorithm</strong>. 
+            There are no fabricated AI percentages, simulated traffic delays, or black-box predictions.
+          </p>
+        </div>
+
+        <div class="rules-container">
+          <div class="rules-card">
+            <h3 class="rules-card-title">
+              <i data-lucide="list-ordered" class="text-accent"></i>
+              <span>Ranking Hierarchy & Criteria</span>
+            </h3>
+            <div class="rules-list">
+              <div class="rule-item">
+                <div class="rule-index">Priority 1</div>
+                <div class="rule-details">
+                  <h4>Route Direction & Selected Departure Window</h4>
+                  <p>Guarantees the trip visits origin before destination (<code class="code-pill">seq_src &lt; seq_dst</code>) and departs within $[T, T+60\text{ min}]$ from the selected boarding station.</p>
+                </div>
+              </div>
+
+              <div class="rule-item">
+                <div class="rule-index">Priority 2</div>
+                <div class="rule-details">
+                  <h4>Fastest Journey Recommendation</h4>
+                  <p>Identifies the shortest calculated travel duration between requested stops. If multiple buses share the minimum time, they are marked as tied fastest options.</p>
+                </div>
+              </div>
+
+              <div class="rule-item">
+                <div class="rule-index">Priority 3</div>
+                <div class="rule-details">
+                  <h4>Fewer Intermediate Stops</h4>
+                  <p>Express buses with fewer stops between your chosen locations are prioritized over local buses that stop at every intermediate station.</p>
+                </div>
+              </div>
+
+              <div class="rule-item">
+                <div class="rule-index">Priority 4</div>
+                <div class="rule-details">
+                  <h4>Lower Fare When Available</h4>
+                  <p>Exact ticket fares looked up from the fare matrix for the specific origin, destination, and bus comfort category.</p>
+                </div>
+              </div>
+
+              <div class="rule-item">
+                <div class="rule-index">Priority 5</div>
+                <div class="rule-details">
+                  <h4>Passenger Bus Type Preference</h4>
+                  <p>Directly respects user filter selection (AC vs Non-AC) and deterministically breaks ties by scheduled departure time.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rules-explanation-card">
+            <h3><i data-lucide="shield-check" class="text-success"></i> Academic Integrity Note</h3>
+            <p>
+              Many student projects simulate "AI recommendations" by generating random percentages or hardcoding arbitrary scores. 
+              <strong>SmartBus enforces academic integrity</strong>:
+            </p>
+            <ul class="integrity-list">
+              <li><i data-lucide="check" class="check-icon"></i> <strong>Real MongoDB Data:</strong> Queries actual documents across all 6 collections.</li>
+              <li><i data-lucide="check" class="check-icon"></i> <strong>Origin Stop Boarding Time:</strong> Uses the vehicle's arrival at the passenger's boarding stop, not the trip's starting depot time.</li>
+              <li><i data-lucide="check" class="check-icon"></i> <strong>Safe Duration Math:</strong> Erroneous midday backwards timetables are marked "Duration unavailable" and excluded from fastest badges.</li>
+              <li><i data-lucide="check" class="check-icon"></i> <strong>Overnight Support:</strong> Spans midnight correctly (e.g. 11:30 PM to 1:45 AM).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section bg-light" id="features">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">Core Capabilities</span>
+          <h2 class="section-title">Engineered for Real-World Transit Queries</h2>
+          <p class="section-subtitle">Key features designed for passenger convenience and system reliability.</p>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon"><i data-lucide="clock-4"></i></div>
+            <h3 class="feature-title">1-Hour Departure Window</h3>
+            <p class="feature-desc">Filter buses departing your specific stop within an hour of your preferred travel time, handling 12h/24h formats and midnight wrap-around.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i data-lucide="zap"></i></div>
+            <h3 class="feature-title">Fastest Bus Recommendation</h3>
+            <p class="feature-desc">Dynamically compares segment durations between requested stations, highlighting the fastest choice and supporting tied fastest options.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i data-lucide="waypoints"></i></div>
+            <h3 class="feature-title">Intermediate Stop Search</h3>
+            <p class="feature-desc">Search between any two transit stops on an intercity route without requiring the trip's starting terminal or final depot.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i data-lucide="receipt"></i></div>
+            <h3 class="feature-title">Exact Fare Matrix Lookup</h3>
+            <p class="feature-desc">Retrieves verified ticket prices mapped directly to your travel segment and bus comfort category.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i data-lucide="route"></i></div>
+            <h3 class="feature-title">Journey-Specific Route Timeline</h3>
+            <p class="feature-desc">Interactive route viewer displaying only the stops relevant to your journey, omitting stops before boarding or after drop-off.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i data-lucide="sliders-horizontal"></i></div>
+            <h3 class="feature-title">Dynamic Multi-Criteria Sorting</h3>
+            <p class="feature-desc">Switch seamlessly between Recommended, Fastest Journey, Fewest Stops, or Lowest Fare with instant live updates.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About & Notice Section -->
+    <section class="section" id="about">
+      <div class="container">
+        <div class="notice-card">
+          <div class="notice-icon"><i data-lucide="info"></i></div>
+          <div class="notice-content">
+            <h3 class="notice-title">Notice: Scheduled vs Live Information</h3>
+            <p class="notice-text">
+              SmartBus operates using <strong>static published intercity timetables</strong> stored in MongoDB. 
+              The application does not simulate GPS vehicle tracking or live road traffic conditions. 
+              Departure and arrival times represent published transport schedules for Punjab intercity corridors.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Route Details Modal -->
+  <div id="route-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-header-info">
+          <span class="modal-badge" id="modal-bus-type">Non-AC</span>
+          <h3 class="modal-title" id="modal-title">Trip Route Details</h3>
+          <p class="modal-subtitle" id="modal-subtitle">Bus Operator & Route Overview</p>
+        </div>
+        <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="Close modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Route Meta Bar -->
+        <div class="modal-meta-bar">
+          <div class="meta-item">
+            <span class="meta-label">Full Route</span>
+            <span class="meta-val" id="modal-full-route">--</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Journey Segment</span>
+            <span class="meta-val" id="modal-journey-segment">--</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Journey Fare</span>
+            <span class="meta-val text-accent" id="modal-fare">--</span>
+          </div>
+        </div>
+
+        <div class="modal-timeline-header">
+          <i data-lucide="milestone"></i>
+          <span>Ordered Stops for Selected Journey:</span>
+        </div>
+
+        <!-- Vertical Stops Timeline -->
+        <div class="timeline-container" id="modal-timeline">
+          <!-- Populated by script.js -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <span class="modal-footer-note"><i data-lucide="info" class="inline-icon"></i> Only stops within your chosen boarding and drop-off points are displayed.</span>
+        <button type="button" class="btn btn-secondary btn-sm" id="modal-close-btn-footer">Close Route</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <i data-lucide="bus-front"></i>
+          <span>Smart<strong>Bus</strong></span>
+        </div>
+        <p class="footer-desc">
+          Smart Intercity Bus Search & Recommendation System.<br>
+          Final-Year Computer Science Project.
+        </p>
+      </div>
+
+      <div class="footer-tech">
+        <h4 class="footer-heading">Technology Stack</h4>
+        <div class="tech-tags">
+          <span class="tech-tag">Python 3.12/3.13</span>
+          <span class="tech-tag">Flask</span>
+          <span class="tech-tag">MongoDB 8.3</span>
+          <span class="tech-tag">PyMongo</span>
+          <span class="tech-tag">HTML5 / CSS3</span>
+          <span class="tech-tag">Vanilla JavaScript</span>
+          <span class="tech-tag">REST API</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <p>&copy; 2026 SmartBus Project. Built for Academic Demonstration & Viva Evaluation.</p>
+        <p class="footer-status"><i data-lucide="check-circle" class="inline-icon text-success"></i> Local MongoDB Connected: <code>smartbus</code></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script -->
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
