@@ -1,193 +1,271 @@
-# 🚌 SmartBus — Smart Bus Recommendation System
+# SmartBus — Smart Intercity Bus Search & Recommendation System
 
-SmartBus is a smart bus recommendation system designed to help passengers find suitable buses based on their source, destination, preferred bus type, and travel time. It helps users compare available buses, check fares and timings, and identify faster travel options to reduce unnecessary waiting and make daily commuting more convenient.
+SmartBus is a final-year Computer Science project delivering a robust, full-stack web application for intercity bus search, directional route-matching, departure time window filtering, and fastest-journey rule-based recommendation across Punjab transit corridors.
 
-## 📌 Project Overview
+Unlike naive search tools that match only origin terminal to final destination terminal, **SmartBus evaluates the entire ordered stop sequence of each trip**. Passengers can search between any two intermediate stops (e.g., *LPU to Jalandhar* or *Phillaur to Beas*) and filter for buses departing within an hour of their preferred travel time, complete with exact ticket fares, scheduled journey durations, and stop sequences.
 
-Finding the right bus can be difficult when passengers need to travel between intermediate stops or want to catch a bus at a specific time. SmartBus addresses this problem by providing route-based bus recommendations using structured bus, route, stop, timing, and fare data stored in MongoDB.
+---
 
-The system focuses on making bus selection easier by considering the passenger's travel requirements and presenting relevant bus options.
+## 1. Project Overview & Key Highlights
 
-## 🎯 Objectives
+- **Intermediate-Stop Route Slicing:** Discovers buses traversing the requested stops in correct chronological sequence (`sequence(Origin) < sequence(Destination)`).
+- **1-Hour Preferred Departure Window:** Passengers can specify a preferred departure time (e.g. `3:00 PM`). SmartBus checks the bus's scheduled time at the **passenger's selected source stop** (not the trip's starting depot) and includes buses departing within $[T, T + 60\text{ mins}]$ inclusive.
+- **Fastest Journey Recommendation:** Dynamically calculates journey duration ($\text{Arrival} - \text{Departure}$ between requested stops) and prominently highlights the **Fastest Journey** (including tied fastest options).
+- **Directional Integrity:** Automatically rejects trips traveling in the reverse direction.
+- **Transparent Rule-Based Ranking:** Deterministic ranking based on fastest duration, fewest stops, exact fares, and passenger comfort preference (AC vs. Non-AC).
+- **Zero Hallucination / Academic Integrity:** Connects directly to local MongoDB collections. Fares and schedules are drawn from verified database records. Missing schedules or unmapped fares are labeled *"Unavailable"* rather than fabricated.
+- **Negative Duration Protection & Overnight Support:** Daytime timetables and erroneous time entries are safely handled without producing negative duration displays, while overnight journeys spanning midnight are calculated accurately.
+- **Interactive Journey Route Viewer:** Slices and displays only the stops within the passenger's boarding and drop-off journey segment.
 
-- Find buses between a selected source and destination.
-- Filter buses by type, including AC and Non-AC.
-- Display buses according to the preferred travel time.
-- Show relevant bus timings and fares.
-- Recommend faster and more convenient bus options.
-- Support passengers travelling between intermediate stops.
-- Reduce unnecessary waiting and improve travel planning.
+---
 
-## ✨ Key Features
+## 2. Technology Stack
 
-- **Smart Bus Search:** Search for buses using source and destination stops.
-- **Time-Based Filtering:** Find buses within the selected travel-time window.
-- **Bus Type Filtering:** Choose between AC and Non-AC buses.
-- **Fare Information:** View fares for different source-destination pairs.
-- **Route Information:** Explore intermediate stops along a bus route.
-- **Fastest Bus Recommendation:** Identify suitable options based on estimated journey duration and route information.
-- **Intermediate Stop Search:** Find buses serving stops between major destinations.
-- **MongoDB Database:** Store and retrieve bus, route, stop, timing, trip, and fare information.
-
-## 🛠️ Technology Stack
-
-| Technology | Purpose |
+| Layer | Technologies |
 |---|---|
-| HTML5 | Structure of the web application |
-| CSS3 | Styling and responsive user interface |
-| JavaScript | Search logic, filtering, and recommendations |
-| MongoDB | Database for storing bus and route information |
-| Node.js | Backend runtime |
-| Express.js | Backend API and server-side operations |
+| **Frontend** | HTML5, CSS3, Modern Vanilla JavaScript (ES6+), Fetch API, [Lucide Icons](https://lucide.dev) |
+| **Backend** | Python 3.12 / 3.13, Flask 3.1 |
+| **Database Driver** | PyMongo 4.19 |
+| **Database** | MongoDB 8.3 (Local server at `mongodb://localhost:27017/smartbus`) |
+| **Testing** | Pytest 9.1 (Comprehensive 27-test suite with in-memory mock isolation) |
 
-## 🗂️ Database Structure
+---
 
-SmartBus uses a MongoDB database named `smartbus`.
+## 3. Database Architecture & Collections
 
-The project contains the following collections:
+The application queries the local `smartbus` MongoDB database containing 6 relational-style collections:
 
-| Collection | Description |
+| Collection | Role & Schema Fields |
 |---|---|
-| `buses` | Bus names, operators, and bus types |
-| `stops` | Stop IDs and stop names |
-| `trips` | Trip details, bus references, and travel directions |
-| `routes` | Ordered stops along each trip |
-| `stop_times` | Arrival and departure timing information |
-| `fares` | Fare information for source-destination pairs and bus types |
+| `stops` (9 docs) | Master registry of transit stations (`stop_id`, `stop_name`). Includes Ludhiana, Phillaur, Goraya, Phagwara, LPU, Jalandhar, Beas, Amritsar, and Batala. |
+| `buses` (95 docs) | Fleet information (`bus_id`, `bus_name`, `operator`, `bus_type`). Comfort types: `AC` and `Non-AC`. |
+| `trips` (95 docs) | Scheduled transit corridors (`trip_id`, `bus_id`, `source`, `destination`, `direction`). |
+| `routes` (676 docs) | Ordered sequence of stops per trip (`trip_id`, `stop_id`, `stop_name`, `sequence`). Sequence numbers define traversal order (1 to 8). |
+| `stop_times` (676 docs) | Published arrival schedule times (`trip_id`, `stop_id`, `stop_name`, `arrival_time`). Format: `HH:MM`. |
+| `fares` (128 docs) | Exact point-to-point ticket prices (`source`, `destination`, `bus_type`, `fare`). |
 
-### Dataset Summary
+### Schedule Data Handling Assumption (Viva Documentation)
+In the current MongoDB dataset schema (`stop_times` collection), timetable entries provide an `arrival_time` field (e.g. `'08:15'`). There is no separate `departure_time` column in the database.
+- **Assumption Used:** For intermediate boarding stations along an intercity corridor, the vehicle's scheduled arrival time at that station serves as the operational departure time proxy (the passenger boards at the scheduled arrival time).
+- **Centralized Logic:** This assumption is isolated inside `get_stop_schedule_time()` and `calculate_journey_duration()` in `recommender.py`. If separate departure timestamps are added in the future, updating this single helper propagates throughout the application.
 
-The current verified dataset contains:
+---
 
-- **95 buses**
-- **95 trips**
-- **9 stops**
-- **676 route records**
-- **676 stop-time records**
-- **128 fare records**
+## 4. Recommendation & Filtering Algorithm
 
-These counts describe the dataset at the last database verification and may change as the project develops.
-
-## 🧭 How SmartBus Works
-
-1. The passenger selects a source and destination.
-2. The passenger chooses a preferred bus type and travel time.
-3. The application retrieves relevant trips and route information from MongoDB.
-4. The system checks whether the selected destination appears after the source in the trip's stop sequence.
-5. Matching buses are filtered according to the selected time and bus type.
-6. The application displays relevant bus details, route information, and available fare data.
-7. Suitable options can be compared to identify a faster or more convenient journey.
-
-## 💡 Example Use Case
-
-Suppose a student wants to travel from LPU to Goraya after college.
-
-Instead of waiting at the bus stop without knowing when a suitable bus will arrive, the student can:
-
-1. Select **LPU** as the source.
-2. Select **Goraya** as the destination.
-3. Choose AC or Non-AC.
-4. Enter a preferred time, such as 3:00 PM.
-5. View matching buses operating within the selected time window.
-6. Compare their timings, fares, and routes before choosing a suitable bus.
-
-This helps the student make a more informed travel decision.
-
-## 📁 Project Structure
-
-The project can be organized as follows:
-
-```text
-SmartBus/
-│
-├── public/
-│   ├── index.html
-│   ├── css/
-│   │   └── style.css
-│   └── js/
-│       └── script.js
-│
-├── routes/
-│   └── busRoutes.js
-│
-├── models/
-│   └── databaseModels.js
-│
-├── config/
-│   └── db.js
-│
-├── server.js
-├── package.json
-├── .gitignore
-└── README.md
+```
+[Search Input: Source, Destination, Preferred Departure Time, Bus Type]
+       │
+       ▼
+1. Route Compatibility & Direction Check
+   - Must contain both stops in trip route
+   - seq(Source) < seq(Destination)
+   - Exclude reverse trips
+       │
+       ▼
+2. 1-Hour Departure Time Window Check (if specified)
+   - Lookup schedule at passenger's selected source stop
+   - Qualifies if dep_time in [T, T + 60 mins] (inclusive)
+   - Excludes trips lacking valid timetable at source stop
+       │
+       ▼
+3. Bus Comfort Preference Filter
+   - Match AC / Non-AC filter if specified by user
+       │
+       ▼
+4. Journey Duration & Fastest Bus Computation
+   - Duration = arr_time(Destination) - dep_time(Source)
+   - Minimum valid duration identified among eligible buses
+   - Buses matching minimum duration are flagged with is_fastest = True
+       │
+       ▼
+5. Transparent Rationale Generation
+   - Generates human-readable explanation (e.g. "⚡ Fastest Journey • Direct non-stop • approx. 20 mins • ₹20 fare")
+       │
+       ▼
+6. Deterministic Multi-Criteria Sorting
+   - Recommended (Default): Fastest option -> Fewest stops -> Shortest duration -> Lowest fare
+   - Fastest Journey: Shortest valid duration first -> Fewest stops -> Lowest fare
+   - Fewest Stops: Minimum intermediate stations -> Shortest duration -> Lowest fare
+   - Lowest Fare: Most economical ticket price -> Fewest stops -> Shortest duration
 ```
 
-*Note: This is a suggested structure. Adjust it to match the actual files in your repository.*
+---
 
-## ⚙️ Installation and Setup
+## 5. Project Folder Structure
+
+```
+SmartBus/
+├── config.py                      # Centralized configuration and environment loader
+├── recommender.py                 # Pure business logic: route matching, time window, fastest bus ranking
+├── app.py                         # Flask application factory, routes, and REST error handlers
+├── requirements.txt               # Python dependencies
+├── README.md                      # Complete system documentation & viva guide
+├── .gitignore                     # Git ignore rules for venv, cache, and logs
+│
+├── templates/
+│   └── index.html                 # Modern, accessible single-page web interface with time picker
+│
+├── static/
+│   ├── css/
+│   │   └── style.css              # Premium navy/teal theme, fastest-card highlights, responsive layout
+│   └── js/
+│       └── script.js              # Client-side controller, Fetch API integration, time filter handling
+│
+├── tests/
+│   ├── test_recommendations.py    # Unit tests covering all 15 enhancement scenarios + edge cases
+│   └── test_api_live.py           # Integration tests against live local MongoDB
+│
+└── [CSV Source Files]             # Preserved source data files (buses.csv, routes.csv, etc.)
+```
+
+---
+
+## 6. Installation & Setup Instructions (Windows)
 
 ### Prerequisites
+1. **Operating System:** Windows 10 or 11.
+2. **Python:** Python 3.12 or 3.13 installed.
+3. **MongoDB Server:** Installed and running locally on port 27017 (`mongodb://localhost:27017/`).
+4. **SmartBus Database:** MongoDB database named `smartbus` loaded.
 
-- Node.js and npm
-- MongoDB Community Server
-- A web browser
-- Git (optional)
+---
 
-### 1. Clone the Repository
-
-```bash
-git clone <your-github-repository-url>
-cd SmartBus
+### Step 1: Open Project Directory
+```powershell
+cd C:\Users\DeLL\Desktop\SmartBus
 ```
 
-### 2. Install Dependencies
+---
 
-```bash
-npm install
+### Step 2: Run Automated Tests
+Execute the comprehensive test suite to confirm all 27 tests pass:
+
+```powershell
+python -m pytest -v
 ```
 
-### 3. Configure MongoDB
-
-Start your local MongoDB server and ensure that the `smartbus` database contains the required collections.
-
-A typical local MongoDB connection string is:
-
-```text
-mongodb://127.0.0.1:27017/smartbus
+Expected output:
+```
+============================= 27 passed in 1.11s ==============================
 ```
 
-Configure the connection string in your environment variables or database configuration file as required by your application.
+---
 
-### 4. Start the Application
-
-```bash
-npm start
+### Step 3: Start the Flask Application
+```powershell
+python app.py
 ```
 
-If your project uses a different startup script, use the command configured in `package.json`.
+Console output:
+```
+=======================================================
+  SmartBus Intercity Search & Recommendation System    
+  Running on: http://127.0.0.1:5000                  
+  Connected to MongoDB: 'smartbus'                     
+=======================================================
+```
 
-Open the local URL printed by your server in the browser.
+---
 
-## 🚀 Future Enhancements
+### Step 4: Open in Web Browser
+Open your browser and navigate to:
+```
+http://127.0.0.1:5000
+```
 
-- Live bus location tracking using GPS.
-- Real-time arrival predictions.
-- User registration and saved routes.
-- Interactive route maps.
-- Notifications for upcoming buses.
-- Improved recommendations using historical travel data.
-- Mobile-friendly interface and accessibility improvements.
+---
 
-## 🎓 Project Purpose
+## 7. REST API Documentation
 
-SmartBus is developed as a final-year academic project to demonstrate the practical application of database management, web development, route-based data retrieval, and recommendation logic to a real-world transportation problem.
+### Search Buses Endpoint
+- **Endpoint:** `GET /api/search`
+- **Query Parameters:**
+  - `source` *(string, required)*: Origin station name (e.g., `LPU`).
+  - `destination` *(string, required)*: Drop station name (e.g., `Jalandhar`).
+  - `departure_time` *(string, optional)*: Preferred departure time (e.g. `15:00` or `3:00 PM`).
+  - `window_minutes` *(int, optional, default: 60)*: Search window in minutes.
+  - `bus_type` *(string, optional)*: `AC`, `Non-AC`, or `Any`.
+  - `sort_by` *(string, optional)*: `recommended`, `fastest_journey`, `fewest_stops`, `lowest_fare`.
 
-## 👨‍💻 Author
+- **Sample Request:**
+  `GET /api/search?source=LPU&destination=Jalandhar&departure_time=15:00&sort_by=fastest_journey`
 
-**Mayank Thakur**
+- **Sample JSON Response:**
+```json
+{
+  "success": true,
+  "source": "LPU",
+  "destination": "Jalandhar",
+  "bus_type_filter": "All",
+  "sort_by": "fastest_journey",
+  "time_filter": {
+    "applied": true,
+    "selected_time": "15:00",
+    "selected_time_12h": "3:00 PM",
+    "window_start_mins": 900,
+    "window_start_12h": "3:00 PM",
+    "window_end_mins": 960,
+    "window_end_12h": "4:00 PM",
+    "window_minutes": 60
+  },
+  "fastest_duration_minutes": 20,
+  "total_results": 6,
+  "results": [
+    {
+      "trip_id": "T005",
+      "bus_id": "B005",
+      "bus_name": "Satluj",
+      "operator": "Satluj Tour and Travels",
+      "bus_type": "Non-AC",
+      "source_stop": "LPU",
+      "destination_stop": "Jalandhar",
+      "departure_time": "15:15",
+      "departure_time_12h": "3:15 PM",
+      "arrival_time": "15:35",
+      "arrival_time_12h": "3:35 PM",
+      "duration_minutes": 20,
+      "duration_display": "20 mins",
+      "intermediate_stops_count": 0,
+      "intermediate_stops": [],
+      "fare": 20.0,
+      "fare_display": "₹20",
+      "is_fastest": true,
+      "recommendation_reason": "⚡ Fastest Journey • Direct non-stop • approx. 20 mins • ₹20 fare • Non-AC"
+    }
+  ]
+}
+```
 
-Computer Science and Engineering
+---
 
-## 📄 License
+## 8. Verification & Test Suite Coverage
 
-This project is developed for educational and academic purposes. Add an appropriate open-source license if you intend to distribute or reuse the project publicly.
+SmartBus includes automated test suites covering all required scenarios:
+
+| Test ID | Scenario Tested | Outcome |
+|---|---|---|
+| `test_01` | Selected time 3:00 PM: a bus at 3:00 PM is included | PASSED |
+| `test_02` | Selected time 3:00 PM: a bus at 3:30 PM is included | PASSED |
+| `test_03` | Selected time 3:00 PM: a bus at 4:00 PM is included | PASSED |
+| `test_04` | Selected time 3:00 PM: a bus at 2:59 PM is excluded | PASSED |
+| `test_05` | Selected time 3:00 PM: a bus at 4:01 PM is excluded | PASSED |
+| `test_06` | Selected source is an intermediate stop | PASSED |
+| `test_07` | Selected destination is an intermediate stop | PASSED |
+| `test_08` | Faster bus ranked ahead of slower bus in fastest_journey sort | PASSED |
+| `test_09` | Two equally fast buses are both marked as tied fastest (`is_fastest: true`) | PASSED |
+| `test_10` | Missing departure or arrival times handled safely with "Duration unavailable" | PASSED |
+| `test_11` | Overnight journey spanning midnight calculated accurately | PASSED |
+| `test_12` | AC and Non-AC comfort filters function alongside time filter | PASSED |
+| `test_13` | Fare and stop-count sorting modes function correctly | PASSED |
+| `test_14` | No matching bus in selected time window returns empty list without error | PASSED |
+| `test_15` | No time selected returns all matching buses (preserving backwards compatibility) | PASSED |
+| `test_api_live` | Health, stops, all-times, time filter, 12h format, and fastest sort on live DB | PASSED |
+
+---
+
+## 9. Final-Year Viva Talking Points
+
+1. **Boarding Stop Departure vs. Trip Origin Depot:** Explain that when a passenger boards at *LPU* at 3:00 PM on a bus originating from *Ludhiana* at 2:15 PM, the system filters by the vehicle's arrival/departure at *LPU* (e.g. 3:15 PM), not the trip's starting depot time.
+2. **Fastest Journey Identification:** Explain how minimum duration is computed dynamically for the queried segment ($T_{arr} - T_{dep}$), highlighting tied fastest options without suppressing other matching buses.
+3. **Transparent Rule-Based Logic:** Emphasize that no black-box machine learning or fabricated percentages are used; every recommendation reason is directly traceable to timetable and fare records in MongoDB.

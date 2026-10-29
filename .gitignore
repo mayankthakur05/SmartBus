@@ -1,0 +1,29 @@
+# Python Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pytest_cache/
+.pytest_cache/
+
+# Environment Variables & Secrets
+.env
+.env.local
+*.env
+
+# Operating System & IDE Artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+Thumbs.db
+Desktop.ini
+
+# Logs and databases
+*.log

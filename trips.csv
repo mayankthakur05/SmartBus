@@ -1,0 +1,96 @@
+trip_id,bus_id,source,destination,direction
+T001,B001,Ludhiana,Batala,Ludhiana-to-Batala
+T002,B002,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T003,B003,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T004,B004,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T005,B005,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T006,B006,Ludhiana,Jalandhar,Ludhiana-to-Jalandhar
+T007,B007,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T008,B008,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T009,B009,Ludhiana,Jalandhar,Ludhiana-to-Jalandhar
+T010,B010,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T011,B011,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T012,B012,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T013,B013,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T014,B014,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T015,B015,Ludhiana,Jalandhar,Ludhiana-to-Jalandhar
+T016,B016,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T017,B017,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T018,B018,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T019,B019,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T020,B020,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T021,B021,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T022,B022,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T023,B023,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T024,B024,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T025,B025,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T026,B026,Ludhiana,Jalandhar,Ludhiana-to-Jalandhar
+T027,B027,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T028,B028,Ludhiana,Jalandhar,Ludhiana-to-Jalandhar
+T029,B029,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T030,B030,Ludhiana,Amritsar,Ludhiana-to-Amritsar
+T031,B031,Ludhiana,Amritsar,Ludhiana to Amritsar
+T032,B032,Ludhiana,Amritsar,Ludhiana to Amritsar
+T033,B033,Ludhiana,Jalandhar,Ludhiana to Jalandhar
+T034,B034,Ludhiana,Amritsar,Ludhiana to Amritsar
+T035,B035,Ludhiana,Amritsar,Ludhiana to Amritsar
+T036,B036,Ludhiana,Jalandhar,Ludhiana to Jalandhar
+T037,B037,Ludhiana,Amritsar,Ludhiana to Amritsar
+T038,B038,Ludhiana,Amritsar,Ludhiana to Amritsar
+T039,B039,Ludhiana,Jalandhar,Ludhiana to Jalandhar
+T040,B040,Ludhiana,Amritsar,Ludhiana to Amritsar
+T041,B041,Ludhiana,Amritsar,Ludhiana to Amritsar
+T042,B042,Amritsar,Ludhiana,Amritsar to Ludhiana
+T043,B043,Amritsar,Ludhiana,Amritsar to Ludhiana
+T044,B044,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T045,B045,Amritsar,Ludhiana,Amritsar to Ludhiana
+T046,B046,Amritsar,Ludhiana,Amritsar to Ludhiana
+T047,B047,Amritsar,Ludhiana,Amritsar to Ludhiana
+T048,B048,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T049,B049,Amritsar,Ludhiana,Amritsar to Ludhiana
+T050,B050,Amritsar,Ludhiana,Amritsar to Ludhiana
+T051,B051,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T052,B052,Amritsar,Ludhiana,Amritsar to Ludhiana
+T053,B053,Amritsar,Ludhiana,Amritsar to Ludhiana
+T054,B054,Amritsar,Ludhiana,Amritsar to Ludhiana
+T055,B055,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T056,B056,Amritsar,Ludhiana,Amritsar to Ludhiana
+T057,B057,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T058,B058,Amritsar,Ludhiana,Amritsar to Ludhiana
+T059,B059,Amritsar,Ludhiana,Amritsar to Ludhiana
+T060,B060,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T061,B061,Amritsar,Ludhiana,Amritsar to Ludhiana
+T062,B062,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T063,B063,Amritsar,Ludhiana,Amritsar to Ludhiana
+T064,B064,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T065,B065,Amritsar,Ludhiana,Amritsar to Ludhiana
+T066,B066,Amritsar,Ludhiana,Amritsar to Ludhiana
+T067,B067,Amritsar,Ludhiana,Amritsar to Ludhiana
+T068,B068,Amritsar,Ludhiana,Amritsar to Ludhiana
+T069,B069,Amritsar,Ludhiana,Amritsar to Ludhiana
+T070,B070,Amritsar,Ludhiana,Amritsar to Ludhiana
+T071,B071,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T072,B072,Amritsar,Ludhiana,Amritsar to Ludhiana
+T073,B073,Amritsar,Ludhiana,Amritsar to Ludhiana
+T074,B074,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T075,B075,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T076,B076,Amritsar,Ludhiana,Amritsar to Ludhiana
+T077,B077,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T078,B078,Amritsar,Ludhiana,Amritsar to Ludhiana
+T079,B079,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T080,B080,Amritsar,Ludhiana,Amritsar to Ludhiana
+T081,B081,Amritsar,Ludhiana,Amritsar to Ludhiana
+T082,B082,Amritsar,Ludhiana,Amritsar to Ludhiana
+T083,B083,Amritsar,Ludhiana,Amritsar to Ludhiana
+T084,B084,Amritsar,Ludhiana,Amritsar to Ludhiana
+T085,B085,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T086,B086,Amritsar,Ludhiana,Amritsar to Ludhiana
+T087,B087,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T088,B088,Amritsar,Ludhiana,Amritsar to Ludhiana
+T089,B089,Jalandhar,Ludhiana,Jalandhar to Ludhiana
+T090,B090,Amritsar,Ludhiana,Amritsar to Ludhiana
+T091,B091,Amritsar,Ludhiana,Amritsar to Ludhiana
+T092,B092,Amritsar,Ludhiana,Amritsar to Ludhiana
+T093,B093,Amritsar,Ludhiana,Amritsar to Ludhiana
+T094,B094,Amritsar,Ludhiana,Amritsar to Ludhiana
+T095,B095,Batala,Ludhiana,Batala to Ludhiana
